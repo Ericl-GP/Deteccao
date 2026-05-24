@@ -1,0 +1,10 @@
+Aluno_Medio
+Aluno_Superior
+Pessoa
+Funcionario_Limpeza
+Material_Limpeza
+Lixeira
+Computador
+Planta
+Mesa
+Quadro

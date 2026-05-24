@@ -1,0 +1,61 @@
+{
+  "version": "0.4.36",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          931.951219512195,
+          22.926829268292693
+        ],
+        [
+          1431.9512195121952,
+          569.2682926829268
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "person",
+      "text": "",
+      "points": [
+        [
+          456.3414634146341,
+          30.2439024390244
+        ],
+        [
+          835.609756097561,
+          785.1219512195121
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "person",
+      "text": "",
+      "points": [
+        [
+          17.31707317073176,
+          27.8048780487805
+        ],
+        [
+          416.0975609756098,
+          1029.0243902439024
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IFTOPROMOCIONAL_frame_0006.jpg",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

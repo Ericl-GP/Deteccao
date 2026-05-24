@@ -1,0 +1,78 @@
+{
+  "version": "0.4.36",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "quadro",
+      "text": "",
+      "points": [
+        [
+          35.60975609756103,
+          88.78048780487805
+        ],
+        [
+          1919.0,
+          740.0
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          1769.7560975609756,
+          279.0
+        ],
+        [
+          1919.0,
+          983.9024390243902
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          425.8536585365854,
+          236.34146341463415
+        ],
+        [
+          784.390243902439,
+          1029.0243902439024
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          5.121951219512249,
+          300.9756097560975
+        ],
+        [
+          292.9268292682927,
+          1046.0975609756097
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IFTOPROMOCIONAL_frame_0009.jpg",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

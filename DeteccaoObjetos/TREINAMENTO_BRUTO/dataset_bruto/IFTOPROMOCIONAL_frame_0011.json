@@ -1,0 +1,180 @@
+{
+  "version": "0.4.36",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          445.3658536585366,
+          305.8536585365853
+        ],
+        [
+          966.0975609756097,
+          996.0975609756097
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          961.2195121951219,
+          194.8780487804878
+        ],
+        [
+          1341.7073170731708,
+          1030.2439024390244
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          1267.3170731707319,
+          149.75609756097563
+        ],
+        [
+          1507.560975609756,
+          992.4390243902438
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          1489.2682926829268,
+          118.04878048780488
+        ],
+        [
+          1727.0731707317073,
+          905.8536585365853
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          1710.0,
+          116.82926829268293
+        ],
+        [
+          1851.4634146341464,
+          833.9024390243902
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          1818.5365853658536,
+          94.8780487804878
+        ],
+        [
+          1919.0,
+          739.0
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          384.390243902439,
+          152.19512195121953
+        ],
+        [
+          635.609756097561,
+          638.780487804878
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          11.219512195122006,
+          174.14634146341464
+        ],
+        [
+          331.9512195121951,
+          905.8536585365853
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          234.39024390243907,
+          113.17073170731707
+        ],
+        [
+          436.8292682926829,
+          420.48780487804873
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "aluno",
+      "text": "",
+      "points": [
+        [
+          886.8292682926829,
+          93.65853658536585
+        ],
+        [
+          1066.09756097561,
+          389.99999999999994
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "IFTOPROMOCIONAL_frame_0011.jpg",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}
