@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
                              QFileDialog, QMessageBox, QGroupBox)
 from PyQt5.QtCore import pyqtSignal, QThread, Qt
 from PyQt5.QtGui import QImage, QPixmap
+
 # ======================================================================
 # THREAD DO YOLO (Roda em segundo plano para não travar a Interface)
 # ======================================================================
@@ -46,12 +47,20 @@ class YoloThread(QThread):
                     break
                 
                 # =====================================================
-                # OTIMIZAÇÃO: Reduz o tamanho do frame para processar mais rápido
+                # OTIMIZAÇÃO: Redimensionamento Proporcional (Sem deformar)
                 # =====================================================
-                frame_redimensionado = (frame) # Reduz para 640x480 (ajuste conforme necessário)
+                altura_orig, largura_orig = frame.shape[:2]
+                largura_alvo = 640 # Reduz a resolução para acelerar o vídeo
                 
-                # Roda a detecção (Ajuste o conf e imgsz se necessário)
-                resultados = modelo(frame_redimensionado, stream=True, conf=0.25, verbose=False, imgsz=640)
+                # Calcula a matemática para manter o Aspect Ratio (Proporção)
+                fator_escala = largura_alvo / float(largura_orig)
+                nova_altura = int(altura_orig * fator_escala)
+                
+                # Agora sim o frame é redimensionado de verdade
+                frame_redimensionado = cv2.resize(frame, (largura_alvo, nova_altura))
+                
+                # Roda a detecção no frame menor e mais leve
+                resultados = modelo(frame_redimensionado, stream=True, conf=0.25, verbose=False, imgsz=largura_alvo)
                 
                 for resultado in resultados:
                     caixas = resultado.boxes
@@ -169,7 +178,6 @@ class MainWindow(QMainWindow):
         arquivo, _ = QFileDialog.getOpenFileName(self, "Selecionar Vídeo", "", "Vídeos (*.mp4 *.avi *.mkv)")
         if arquivo:
             self.fonte_selecionada = arquivo
-            # Mostra apenas o nome do arquivo final, não o caminho inteiro
             nome_curto = arquivo.split("/")[-1]
             self.label_fonte_atual.setText(f"Fonte: {nome_curto}")
 
@@ -178,18 +186,14 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Aviso", "Selecione uma fonte de vídeo primeiro!")
             return
 
-        # Pega o texto da combobox (ex: "yolo26n.pt (Nano...)") e separa só a parte do arquivo
         texto_modelo = self.combo_modelo.currentText()
         arquivo_modelo = texto_modelo.split(" ")[0]
 
-        # Configura a Thread
         self.thread_yolo.fonte_video = self.fonte_selecionada
         self.thread_yolo.nome_modelo = arquivo_modelo
         
-        # Inicia a execução
         self.thread_yolo.start()
         
-        # Alterna botões
         self.btn_iniciar.setEnabled(False)
         self.btn_parar.setEnabled(True)
         self.combo_modelo.setEnabled(False)
@@ -200,7 +204,6 @@ class MainWindow(QMainWindow):
         self.thread_yolo.parar()
         self.label_video.setText("Vídeo Parado.")
         
-        # Alterna botões de volta
         self.btn_iniciar.setEnabled(True)
         self.btn_parar.setEnabled(False)
         self.combo_modelo.setEnabled(True)
@@ -209,22 +212,18 @@ class MainWindow(QMainWindow):
 
     def atualizar_imagem(self, frame_cv):
         """ Converte a imagem BGR do OpenCV para o formato RGB do PyQt e exibe na tela """
-        # Converte BGR para RGB
         rgb_image = cv2.cvtColor(frame_cv, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_por_linha = ch * w
         
-        # Cria a imagem do Qt
         q_img = QImage(rgb_image.data, w, h, bytes_por_linha, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
         
-        # Escala mantendo a proporção (impede a janela de ficar encolhendo/distorcendo)
+        # O PyQt cuida de exibir o vídeo no tamanho da tela preta sem esticá-lo (Qt.KeepAspectRatio)
         pixmap_escalado = pixmap.scaled(self.label_video.width(), self.label_video.height(), Qt.KeepAspectRatio)
-        
         self.label_video.setPixmap(pixmap_escalado)
 
     def closeEvent(self, event):
-        """ Garante que a câmera seja desligada se o usuário fechar a janela no 'X' """
         self.thread_yolo.parar()
         event.accept()
 
