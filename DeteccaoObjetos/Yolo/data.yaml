@@ -1,0 +1,5 @@
+names:
+- Bolsa
+nc: 1
+train: "/content/drive/MyDrive/Colab Notebooks/Detecc\u0327a\u0303o/dataset_final/train/images"
+val: "/content/drive/MyDrive/Colab Notebooks/Detecc\u0327a\u0303o/dataset_final/val/images"

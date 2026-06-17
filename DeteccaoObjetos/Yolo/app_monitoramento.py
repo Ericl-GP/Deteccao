@@ -26,7 +26,7 @@ class YoloThread(QThread):
         super().__init__()
         self._rodando = False
         self.fonte_video = 0
-        self.nome_modelo = 'yolo26n.pt' # Padrão: Nano
+        self.nome_modelo = 'best.pt' # Padrão: Nano
 
     def run(self):
         self._rodando = True
@@ -69,18 +69,34 @@ class YoloThread(QThread):
                         confianca = float(caixa.conf[0])
                         x1, y1, x2, y2 = map(int, caixa.xyxy[0])
                         
-                        # Pessoa (Verde)
-                        if classe_id == 0:
-                            cor = (0, 255, 0)
-                            cv2.rectangle(frame_redimensionado, (x1, y1), (x2, y2), cor, 2)
-                            cv2.putText(frame_redimensionado, f"Pessoa {confianca:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, cor, 2)
-                            
-                        # Mochila/Bolsa (Vermelho)
-                        elif classe_id in [24, 26]:
-                            cor = (0, 0, 255)
-                            cv2.rectangle(frame_redimensionado, (x1, y1), (x2, y2), cor, 2)
-                            cv2.putText(frame_redimensionado, f"Bolsa {confianca:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, cor, 2)
+                        nome_da_classe = ""
+                        cor = (255, 255, 255)
 
+                        # =========================================================
+                        # LÓGICA 1: O NOSSO MODELO TREINADO (best.pt)
+                        # =========================================================
+                        if self.nome_modelo == 'best.pt':
+                            if classe_id == 0:
+                                nome_da_classe = "Bolsa"
+                                cor = (0, 0, 255) # Vermelho
+                                
+                        # =========================================================
+                        # LÓGICA 2: OS MODELOS GENÉRICOS (yolo26m, etc)
+                        # =========================================================
+                        else:
+                            if classe_id == 0:
+                                nome_da_classe = "Pessoa"
+                                cor = (0, 255, 0) # Verde
+                            elif classe_id in [24, 26]:
+                                nome_da_classe = "Bolsa"
+                                cor = (0, 0, 255) # Vermelho
+
+                        # =========================================================
+                        # DESENHA NA TELA (Só desenha se achou algo mapeado acima)
+                        # =========================================================
+                        if nome_da_classe != "":
+                            cv2.rectangle(frame_redimensionado, (x1, y1), (x2, y2), cor, 2)
+                            cv2.putText(frame_redimensionado, f"{nome_da_classe} {confianca:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, cor, 2)
                 # Envia o frame anotado para a tela principal
                 self.frame_atualizado.emit(frame_redimensionado)
 
@@ -124,7 +140,8 @@ class MainWindow(QMainWindow):
         grupo_modelo = QGroupBox("Tamanho do Modelo (IA)")
         layout_modelo = QVBoxLayout()
         self.combo_modelo = QComboBox()
-        self.combo_modelo.addItems(["yolo26n.pt (Nano - Muito Rápido)", 
+        self.combo_modelo.addItems(["best.pt (Modelo Personalizado - Bolsa)", 
+                                    "yolo26n.pt (Nano - Muito Rápido)", 
                                     "yolo26s.pt (Small - Rápido)", 
                                     "yolo26m.pt (Medium - Equilibrado)",
                                     "yolo26l.pt (Large - Lento/Preciso)"])
