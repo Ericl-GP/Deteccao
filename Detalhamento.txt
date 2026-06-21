@@ -1,51 +1,63 @@
 ================================================================================
-RELATÓRIO DE TECNOLOGIAS, MODELOS E FERRAMENTAS - PROJETO DE DETECÇÃO IFTO
+
+RELATÓRIO TÉCNICO E ARQUITETURAL - PROJETO DE DETECÇÃO IFTO (VERSÃO 2.1)
+
+ARQUITETURA DO PROJETO E FLUXO DE TRABALHO (PIPELINE)
+
+O projeto opera em uma arquitetura híbrida de Nuvem/Borda (Cloud-Edge) dividida em dois ambientes principais, explorando ao máximo a capacidade assíncrona dos hardwares disponíveis:
+
+NUVEM (Google Colab): Responsável pelas rotinas massivas de Big Data. A GPU Tesla T4 (16GB VRAM) executa o Auto-Labeling, divisão dos bancos de dados, geração nativa '.txt' (YOLO) e treinamento profundo (Deep Learning).
+
+BORDA (PC AMD Ryzen 3 / RX 580): Responsável pela inferência de alta performance em tempo real via aplicação Desktop (PyQt5). Projetado especificamente para rodar o runtime ONNX, compensando a ausência de núcleos CUDA locais.
+
+ESTRATÉGIA DE MODELAGEM (TEACHER-STUDENT)
+
+Aplica-se o paradigma avançado de Destilação de Conhecimento (Teacher-Student):
+
+Professor (Anotador): O modelo YOLOv8m.pt processa os frames e gera coordenadas precisas baseadas nos pesos originais treinados na base COCO (80 classes), rastreando a classe Bolsa (IDs 24 e 26).
+
+Aluno (Modelo Final IFTO): A arquitetura mais moderna, YOLO11 Nano (yolo11n.pt), "herda" essas anotações (agora compactadas em uma classe única, ID 0) e realiza um Fine-Tuning intensivo, tornando-se especialista (Specialist Model) para rodar leve na máquina de borda.
+
+PIPELINE DE TREINAMENTO OTIMIZADO V2 (Nuvem)
+
+FP16 (Precision Scaling): Utiliza-se 'half=True' durante as rodadas de treino, otimizando transistores e cortando até 30% do tempo de processamento matricial na Tesla T4.
+
+Forçamento de GPU Local (device=0): Bloqueia o uso da CPU para treinamento.
+
+Data Augmentation Agressivo (YOLO Loader): Mutações efetuadas exclusivamente em RAM por lote.
+
+Mosaic=1.0: Concatenação de quatro imagens para aprendizado holístico;
+
+Degrees=15.0 / Translate=0.1: Rotação e correção de oclusão do corredor do IFTO;
+
+Fliplr=0.5 / Scale=0.5 / hsv_s=0.3: Mutação de iluminação e aproximação das catracas.
+
+ACELERAÇÃO DE INFERÊNCIA E COMPILAÇÃO (ONNX EDGE COMPUTING)
+
+A solução para taxas baixas de FPS no Windows/Ryzen baseia-se na conversão e roteamento de APIs:
+
+Exportação ONNX: O PyTorch original 'best.pt' sofre um freeze graph conversion gerando 'best.onnx'. Esse formato (Open Neural Network Exchange) dispensa as pesadas bibliotecas de treinamento da máquina local.
+
+ONNX Runtime Execution: O aplicativo de monitoramento injeta o ONNX diretamente na engine C++ em vez de instanciar a classe Python Ultralytics padrão, aumentando drasticamente o processamento de Tensores na CPU AMD.
+
+APLICATIVO DE MONITORAMENTO LOCAL (app_monitoramento.py - OTIMIZADO)
+
+O novo script PyQt5 consolida as melhores práticas de Engenharia de Interface em Python:
+
+Contenção de Vazamento e Crash: Variáveis de ambiente isolam as diretrizes do processador (KMP_DUPLICATE_LIB_OK e ORT_DISABLE_MEMORY_PATTERN), eliminando crashes crônicos no Windows com OpenMP.
+
+Execução Assíncrona Não-Bloqueante (QThread): A interface gráfica (Janela) é desvinculada do loop pesadíssimo do OpenCV/YOLO, permitindo fluidez extrema nos botões e mostradores.
+
+Resolução Dinâmica Segura: Redimensionamento matricial 'Aspect-Ratio safe' (KeepAspectRatio + SmoothTransformation) efetuado pós-inferência, alimentando o processador de vídeo visual (QPixmap) sem achatamento.
+
+Lógica Condicional de Classes:
+
+'best.pt' / 'best.onnx': ID 0 é interpretado e traçado estritamente como "Bolsa" (Vermelho).
+
+'yolo11n.pt' genérico: Retoma Mapeamento COCO: ID 0 = "Pessoa" (Verde), IDs 24/26 = "Bolsa" (Vermelho).
+
+Fila Circular (Deque): Implementação rigorosa do cálculo de Quadros Por Segundo com buffer deslizante para exibição numérica na Barra de Status sem oscilação estroboscópica visual.
+
 ================================================================================
 
-1. LINGUAGEM BASE E AMBIENTE
---------------------------------------------------------------------------------
-* Python (3.10+): Linguagem principal utilizada para o desenvolvimento dos scripts de visão computacional e interface gráfica.
-* Ambiente Virtual (.venv): Utilizado para isolamento de dependências no Windows 11 Pro, garantindo que as versões específicas de bibliotecas (como o PyTorch para CPU) não conflitassem com o restante do sistema.
-
-2. FRAMEWORKS E BIBLIOTECAS DE INTELIGÊNCIA ARTIFICIAL
---------------------------------------------------------------------------------
-* Ultralytics (YOLO): Biblioteca oficial que fornece a arquitetura do YOLOv8. Responsável por carregar os pesos da rede neural e executar a inferência matemática nos quadros de vídeo.
-* PyTorch (torch, torchvision): Motor de Deep Learning que roda por trás do YOLO. 
-  - Justificativa técnica: Durante o desenvolvimento local em hardware AMD (RX 580), foi necessário realizar o downgrade para a versão 2.2.2 compilada estritamente para CPU. Isso evitou a falha crítica de dependência da arquitetura CUDA (WinError 1114 - c10.dll), permitindo que o processador (Ryzen 3) assumisse o cálculo matricial.
-
-3. MODELOS DE IA (YOLOv8)
---------------------------------------------------------------------------------
-Foram testadas e implementadas diferentes variações arquitetônicas do modelo base:
-* YOLOv8 Nano (yolov8n.pt / yolo26n.pt): Modelo de inferência ultrarrápida. Utilizado nos testes iniciais e no ambiente de nuvem em tempo real (Colab + JavaScript) devido à sua baixa latência, porém com dificuldade para detectar objetos ocluídos ou pequenos.
-* YOLOv8 Medium (yolov8m.pt / yolo26m.pt): Modelo adotado como ideal para o protótipo local. Possui maior densidade de parâmetros (camadas neurais), solucionando o problema de assimetria de tamanho das caixas e permitindo a detecção de mochilas e bolsas nas costas dos alunos do IFTO.
-
-4. BANCO DE DADOS (DATASET)
---------------------------------------------------------------------------------
-* COCO Dataset (Common Objects in Context): Banco de dados open-source mantido por um consórcio de tecnologia, contendo milhões de imagens anotadas. 
-  - Aplicação no projeto: O modelo pré-treinado no COCO foi utilizado como "Zero-Shot" (sem necessidade de re-treinamento inicial). Foi desenvolvido um script de filtragem pós-processamento para ignorar 78 classes irrelevantes e focar estritamente nas classes: ID 0 (Pessoas), ID 24 (Mochilas) e ID 26 (Bolsas de mão).
-
-5. PROCESSAMENTO DE IMAGEM E VÍDEO
---------------------------------------------------------------------------------
-* OpenCV (cv2): Biblioteca core para manipulação de matrizes de imagem.
-  - Usos: Abertura e decodificação do arquivo de vídeo local (MP4), acesso a webcams/câmeras IP, desenho das Bounding Boxes (caixas verdes e vermelhas), inserção de rótulos de texto e aplicação de fator de escala matemático (Aspect Ratio) para redimensionar o vídeo sem deformações, reduzindo a carga de processamento.
-* NumPy: Utilizado para a manipulação rápida dos arrays de pixels, conversão de canais de cor (BGR para RGB) e criação de camadas alfa (transparência) na implementação em nuvem.
-
-6. INTERFACE GRÁFICA DO USUÁRIO (GUI)
---------------------------------------------------------------------------------
-* PyQt5: Framework escolhido para a construção do Software de Monitoramento Desktop.
-  - Arquitetura de Threading (QThread): Implementada para paralelizar o processamento. O motor da IA roda em segundo plano (Worker Thread), enquanto a interface (Main Thread) fica livre para receber cliques do usuário sem congelar o sistema operacional.
-  - Recursos: Seleção dinâmica do tamanho do modelo YOLO, escolha de fonte de vídeo (arquivo local ou webcam nativa) e redimensionamento dinâmico do monitor de exibição.
-
-7. COMPUTAÇÃO EM NUVEM E AMBIENTES DE TESTE
---------------------------------------------------------------------------------
-* Google Colab: Utilizado para testes de estresse de alto desempenho e validação em nuvem.
-  - Hardware: GPU NVIDIA Tesla T4 (16GB VRAM), permitindo processamento em lote (Batch Processing) do vídeo promocional do IFTO com taxa de quadros (FPS) superior à do hardware local.
-  - Integração Web (JavaScript + Python): Desenvolvimento de um script híbrido para burlar a limitação de hardware de rede da nuvem, capturando o vídeo da webcam local via navegador (DOM via Base64) e enviando os quadros em tempo real para a IA no servidor do Google.
-
-8. FERRAMENTAS DE ANOTAÇÃO E PREPARAÇÃO (Avaliação de Fine-Tuning)
---------------------------------------------------------------------------------
-Durante o escopo do projeto, ferramentas de Labeling foram avaliadas caso a necessidade de treinar um modelo próprio para os uniformes do IFTO (Plano B) se fizesse necessária:
-* labelImg: Descartado do fluxo moderno devido à depreciação do código e incompatibilidade com o tratamento de floats na versão Python 3.10+.
-* Label Studio / AnyLabeling: Levantadas como alternativas modernas (Active Learning e IA embutida) para geração de datasets customizados no formato YOLO.
-
-================================================================================
+GERADO AUTOMATICAMENTE - REFERÊNCIA DE ARQUITETURA V2.1
