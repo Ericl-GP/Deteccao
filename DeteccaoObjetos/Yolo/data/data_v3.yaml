@@ -1,0 +1,7 @@
+names:
+- Pessoa
+- Bolsa
+nc: 2
+path: /content/drive/MyDrive/Colab Notebooks/Detecção/dataset_final_v3
+train: train/images
+val: val/images
